@@ -1,3 +1,6 @@
 flake*
 **/*.lock
 **/target
+**/main
+**/*.so
+**/bindings_generated.rs
