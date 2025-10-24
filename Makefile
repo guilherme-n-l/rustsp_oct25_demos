@@ -1,20 +1,24 @@
 define generate-md-from-scripts
-	@echo "# $(1) Scripts" > $(1)/README.md; \
+	@echo Generating Docs for $(1); \
 	for f in $(wildcard $(1)/*.$(2)); do \
-		echo >> $(1)/README.md; \
-		echo "## $$f" >> $(1)/README.md; \
+		echo -e "## $$f\n" >> $(1)/README.md; \
 		echo '```$(2)' >> $(1)/README.md; \
 		cat $$f >> $(1)/README.md; \
 		echo '```' >> $(1)/README.md; \
+		echo "" >> $(1)/README.md; \
 	done
 endef
 
-nix:
-	@cd nix && for f in *.sh; do \
-		echo "Running $$f"; \
-		bash $$f; \
-	done
+all: nix ffi bindgen docs
 
+nix:
+	$(MAKE) -C $@
+
+ffi:
+	$(MAKE) -C $@
+
+bindgen:
+	$(MAKE) -C $@
 
 docs:
 	@for dir in *; do \
@@ -22,14 +26,42 @@ docs:
 			$(MAKE) docs-$$dir; \
 		fi \
 	done
-
 docs-%:
-	$(call generate-md-from-scripts,$(*),sh)
+	@-$(MAKE) -C $(*) clean
+	$(MAKE) clean-docs-$(*)
+	$(MAKE) generate-docs-$(*)
+
+generate-docs-nix:
+	$(call generate-md-from-scripts,nix,sh)
+generate-docs-ffi:
+	$(call generate-md-from-scripts,ffi,rs)
+	$(call generate-md-from-scripts,ffi,c)
+generate-docs-bindgen:
+	$(call generate-md-from-scripts,bindgen,h)
+	$(call generate-md-from-scripts,bindgen,c)
+	$(call generate-md-from-scripts,bindgen,rs)
+
+clean-docs:
+	@for dir in *; do \
+		if [ -d $$dir ]; then \
+			$(MAKE) clean-doc-$$dir; \
+		fi \
+	done
+clean-docs-%:
+	@echo Cleaning Docs for $(*); \
+		cd $(*) && \
+		echo -n "" > README.md
 
 clean:
-	@while IFS= read -r file; do \
-		rm -rf $$file; \
+	@while IFS= read -r pattern; do \
+		git ls-files --ignored --exclude-standard --others -- "$$pattern" | xargs rm -rf; \
 	done < .gitignore
+	-@for dir in */; do \
+		if [ -f $$dir/Makefile ]; then \
+			echo "Cleaning in $$dir"; \
+			$(MAKE) -C $$dir clean; \
+		fi \
+	done
 
 
-.PHONY: nix clean docs-% docs
+.PHONY: all nix clean docs-% docs clean-docs-% clean-docs generate-docs-%
