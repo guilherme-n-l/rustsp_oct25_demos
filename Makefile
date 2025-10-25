@@ -20,6 +20,9 @@ ffi:
 bindgen:
 	$(MAKE) -C $@
 
+demo:
+	$(MAKE) KDIR=$$PWD/demo/linux -C $@
+
 docs:
 	@for dir in *; do \
 		if [ -d $$dir ]; then \
@@ -40,6 +43,9 @@ generate-docs-bindgen:
 	$(call generate-md-from-scripts,bindgen,h)
 	$(call generate-md-from-scripts,bindgen,c)
 	$(call generate-md-from-scripts,bindgen,rs)
+generate-docs-demo:
+	$(call generate-md-from-scripts,demo,sh)
+	$(call generate-md-from-scripts,demo,rs)
 
 clean-docs:
 	@for dir in *; do \

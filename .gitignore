@@ -4,3 +4,17 @@ flake*
 **/main
 **/*.so
 **/bindings_generated.rs
+**/linux/
+**/*.tar.*
+**/.module*
+**/..module*
+**/.Module*
+**/module*
+**/Module*
+**/.rustsp*
+**/*.ko
+**/*.mod*
+**/*.o
+**/*.img
+**/*.tar*
+demo/fs
